@@ -174,6 +174,14 @@ def MetaData(comp):
     d[name] = value
   return d
 ############################################################################
+def Generate_Rectangle(starting_x,starting_y,ending_x,ending_y,line_thickness):
+  "Returns a string containing a rectangle. (Used for making package borders)"
+  rectangle  =   "DS %+f %+f %+f %+f %+f 21"%(starting_x,starting_y,ending_x,starting_y,line_thickness)
+  rectangle += "\nDS %+f %+f %+f %+f %+f 21"%(starting_x,starting_y,starting_x,ending_y,line_thickness)
+  rectangle += "\nDS %+f %+f %+f %+f %+f 21"%(starting_x,ending_y,ending_x,ending_y,line_thickness)
+  rectangle += "\nDS %+f %+f %+f %+f %+f 21"%(ending_x,starting_y,ending_x,ending_y,line_thickness)
+  return rectangle
+############################################################################
 def MakePads_SIP(pins,meta):
   """To Make the Pads and draw outline for SIP Connector"""
 
@@ -217,11 +225,7 @@ def MakePads_SIP(pins,meta):
     buf = buf + (float(meta["locking"])*2)
   Y = buf #Increase Y Only  
   my = buf/-2
-  drawing  =   "DS %+f %+f %+f %+f %+f 21"%(mx,my,mx+X,my,drawing_line_thickness)
-  drawing += "\nDS %+f %+f %+f %+f %+f 21"%(mx,my,mx,Y+my,drawing_line_thickness)
-  drawing += "\nDS %+f %+f %+f %+f %+f 21"%(mx,Y+my,mx+X,Y+my,drawing_line_thickness)
-  drawing += "\nDS %+f %+f %+f %+f %+f 21"%(mx+X,my,mx+X,Y+my,drawing_line_thickness)
-  meta["drawing"]=drawing
+  meta["drawing"]=Generate_Rectangle(mx,my,mx+X,my+Y,drawing_line_thickness)
   meta["modref_y"]="-2.5"
   return pin_str
 ############################################################################
@@ -316,10 +320,7 @@ def MakePads_CONN_Dual(pins,meta):
   Y  = ((float(meta["pitch"])*(len(pins)-2)/2.0)+(2*outline_offset)+float(meta["pady"]))
   mx = ((float(meta["padx"])/-2.0)-outline_offset)
   my = ((float(meta["pady"])/-2.0)-outline_offset)
-  drawing  =   "DS %+f %+f %+f %+f %+f 21"%(mx,my,mx+X,my,drawing_line_thickness)
-  drawing += "\nDS %+f %+f %+f %+f %+f 21"%(mx,my,mx,Y+my,drawing_line_thickness)
-  drawing += "\nDS %+f %+f %+f %+f %+f 21"%(mx,Y+my,mx+X,Y+my,drawing_line_thickness)
-  drawing += "\nDS %+f %+f %+f %+f %+f 21"%(mx+X,my,mx+X,Y+my,drawing_line_thickness)
+  drawing = Generate_Rectangle(mx,my,mx+X,my+Y,drawing_line_thickness)
   drawing += "\nDC %+f %+f %+f %+f %+f 21"%(mx-circle_center_offset,0,mx-circle_center_offset-circle_radius,0,drawing_line_thickness)
   meta["drawing"]=drawing
   meta["modref_y"]="-3.8"
