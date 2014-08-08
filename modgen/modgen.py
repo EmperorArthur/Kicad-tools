@@ -191,14 +191,11 @@ def Generate_Rectangle(starting_x,starting_y,ending_x,ending_y,line_thickness):
   rectangle += "\nDS %+f %+f %+f %+f %+f 21"%(ending_x,starting_y,ending_x,ending_y,line_thickness)
   return rectangle
 ############################################################################
-def MakeFirstPad(pins,meta):
+def MakeFirstPad(pins,meta,x,y):
   "Make the first pad (handles the case of first pad square or not)"
   pin = {}
-  if(meta["package"]=='SIP' and meta["locking"]!=None):
-	pin["piny"]="%+f"%((float(meta["locking"])))
-  else:
-    pin["piny"]="%+f"%(0)
-  pin["pinx"]="%+f"%(0)
+  pin["piny"]="%+f"%(y)
+  pin["pinx"]="%+f"%(x)
   pin["padtype"]=meta["padtype"]
   pin["layermask"]=meta["padlayermask"]
   pin["drill"]="%+f 0 0"%(float(meta["paddrill"]))
@@ -241,8 +238,12 @@ def MakePads_SIP(pins,meta):
   pitch = float(meta["pitch"])
   locking = 1
   #Handle first pin (special case)
-  pin_str = MakeFirstPad(pins,meta)
+  if(meta["locking"]!=None):
+    pin_str = MakeFirstPad(pins,meta,x,float(meta["locking"]))
+  else:
+    pin_str = MakeFirstPad(pins,meta,x,y)
   x = pitch
+  #Handle all other pins
   for i in range(1,len(pins)):
     if(meta["locking"]!=None):
       if(locking==0):
@@ -268,7 +269,7 @@ def MakePads_DIP(pins,meta):
   y = 0.0
   pitch = float(meta["pitch"])
   #Handle first pin (special case)
-  pin_str = MakeFirstPad(pins,meta)
+  pin_str = MakeFirstPad(pins,meta,x,y)
   y = pitch
   #Set First Half of the Pins
   for i in range(1,int(len(pins)/2)):
@@ -295,8 +296,9 @@ def MakePads_CONN_Dual(pins,meta):
   y = 0.0
   pitch = float(meta["pitch"])
   #Handle first pin (special case)
-  pin_str = MakeFirstPad(pins,meta)
+  pin_str = MakeFirstPad(pins,meta,x,y)
   x = float(meta["rowx"])
+  #Handle all other pins
   for i in range(1,len(pins)):
     pin_str += MakePad(pins[i],meta,x,y)
     if (i&1)==0:#Next Even Pin
