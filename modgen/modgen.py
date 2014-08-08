@@ -231,55 +231,57 @@ def MakePads_SIP(pins,meta):
 ############################################################################
 def MakePads_DIP(pins,meta):
   """To Make the Pads and draw outline for DIP Package"""
+
+  drawing_line_thickness = 0.3
+  #This determines the package size as offset from pin 1
+  outline_offset = 1.25
+  #How far to the left of the package outline the circle's center is
+  circle_center_offset = 1.25
+  circle_radius = 0.75
+
   pin_str = ""
   x = 0
   y = 0
   pin = {}
-  pitch = float(meta["pitch"]) * 10
+  pitch = float(meta["pitch"])
   #Set First Half of the Pins
   for i in range(0,int(len(pins)/2)):
-    pin["piny"]="%d"%(y)
-    pin["pinx"]="%d"%(x)
+    pin["piny"]="%+f"%(y)
+    pin["pinx"]="%+f"%(x)
     y = y + pitch
     pin["padtype"]=meta["padtype"]
     pin["layermask"]=meta["padlayermask"]
-    pin["drill"]="%d 0 0"%(int(float(meta["paddrill"])*10))
+    pin["drill"]="%+f 0 0"%(float(meta["paddrill"]))
     if(x==pitch and meta["firstpadsquare"]!= None):
-      pin["shape"]="\"%s\" %s %d %d 0 0 0"%(pins[i],"R",\
-          float(meta["padx"])*10,float(meta["pady"])*10)
+      pin["shape"]="\"%s\" %s %+f %+f 0 0 0"%(pins[i],"R",\
+          float(meta["padx"]),float(meta["pady"]))
     else:
-      pin["shape"]="\"%s\" %s %d %d 0 0 0"%(pins[i],meta["padshape"],\
-          float(meta["padx"])*10,float(meta["pady"])*10)
+      pin["shape"]="\"%s\" %s %+f %+f 0 0 0"%(pins[i],meta["padshape"],\
+          float(meta["padx"]),float(meta["pady"]))
     pin_str += template_pad%pin #Add the Pad
   #Increment the Next Row
-  x = float(meta["rowx"])*10
+  x = float(meta["rowx"])
   y = y - pitch
   #Set Second Half of the Pins
   for i in range(int(len(pins)/2),len(pins)):
-    pin["piny"]="%d"%(y)
-    pin["pinx"]="%d"%(x)
+    pin["piny"]="%+f"%(y)
+    pin["pinx"]="%+f"%(x)
     y = y - pitch
     pin["padtype"]=meta["padtype"]
     pin["layermask"]=meta["padlayermask"]
-    pin["drill"]="%d 0 0"%(int(float(meta["paddrill"])*10))
-    pin["shape"]="\"%s\" %s %d %d 0 0 0"%(pins[i],meta["padshape"],\
-          float(meta["padx"])*10,float(meta["pady"])*10)
+    pin["drill"]="%+f 0 0"%(float(meta["paddrill"]))
+    pin["shape"]="\"%s\" %s %+f %+f 0 0 0"%(pins[i],meta["padshape"],\
+          float(meta["padx"]),float(meta["pady"]))
     pin_str += template_pad%pin #Add the Pad
   # Make Drawing  
-  bufx = (float(meta["padx"])+100+float(meta["rowx"]))*10
-  bufy = ((float(meta["pitch"])*(len(pins)-2)/2.0)\
-          +100+float(meta["pady"]))*10
-  X = bufx
-  mx = ((float(meta["padx"])/-2.0)-50)*10
-  Y = bufy
-  my = ((float(meta["pady"])/-2.0)-50)*10
-  drawing  = "DS %d %d %d %d 120 21"%(mx,my,mx+X,my)
-  drawing += "\nDS %d %d %d %d 120 21"%(mx,my,mx,Y+my)
-  drawing += "\nDS %d %d %d %d 120 21"%(mx,Y+my,mx+X,Y+my)
-  drawing += "\nDS %d %d %d %d 120 21"%(mx+X,my,mx+X,Y+my)
-  drawing += "\nDC %d %d %d %d 120 21"%(mx-500,0,mx-200,0)
+  X  = (float(meta["padx"])+(2*outline_offset)+float(meta["rowx"]))
+  Y  = ((float(meta["pitch"])*(len(pins)-2)/2.0)+(2*outline_offset)+float(meta["pady"]))
+  mx = ((float(meta["padx"])/-2.0)-outline_offset)
+  my = ((float(meta["pady"])/-2.0)-outline_offset)
+  drawing = Generate_Rectangle(mx,my,mx+X,my+Y,drawing_line_thickness)
+  drawing += "\nDC %+f %+f %+f %+f %+f 21"%(mx-circle_center_offset,0,mx-circle_center_offset-circle_radius,0,drawing_line_thickness)
   meta["drawing"]=drawing
-  meta["modref_y"]="-1500"
+  meta["modref_y"]="-3.8"
   return pin_str
 ############################################################################
 def MakePads_CONN_Dual(pins,meta):
