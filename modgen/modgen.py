@@ -79,6 +79,15 @@ __version__ = "0.5"
 ############################################################################
 _debug_message = 1
 ############################################################################
+#Global Constants
+############################################################################
+drawing_line_thickness = 0.3
+#This determines the package size as offset from pin 1
+outline_offset = 1.25
+#How far to the left of the package outline the circle's center is
+circle_center_offset = 1.25
+circle_radius = 0.75
+############################################################################
 #FORMAT>Lib
 ############################################################################
 template_pcb = """PCBNEW-LibModule-V1  07-02-2012 08:54:12
@@ -203,11 +212,6 @@ def MakeFirstPad(pins,meta):
 ############################################################################
 def MakePads_SIP(pins,meta):
   """To Make the Pads and draw outline for SIP Connector"""
-
-  drawing_line_thickness = 0.3
-  #This determines the package size as offset from pin 1
-  outline_offset = 1.25
-
   pin_str = ""
   x = 0
   y = 0
@@ -249,14 +253,6 @@ def MakePads_SIP(pins,meta):
 ############################################################################
 def MakePads_DIP(pins,meta):
   """To Make the Pads and draw outline for DIP Package"""
-
-  drawing_line_thickness = 0.3
-  #This determines the package size as offset from pin 1
-  outline_offset = 1.25
-  #How far to the left of the package outline the circle's center is
-  circle_center_offset = 1.25
-  circle_radius = 0.75
-
   pin_str = ""
   x = 0
   y = 0
@@ -303,14 +299,6 @@ def MakePads_DIP(pins,meta):
 ############################################################################
 def MakePads_CONN_Dual(pins,meta):
   """ To Make the Pads and draw outline for Dual row Connector """
-
-  drawing_line_thickness = 0.3
-  #This determines the package size as offset from pin 1
-  outline_offset = 1.25
-  #How far to the left of the package outline the circle's center is
-  circle_center_offset = 1.25
-  circle_radius = 0.75
-
   pin_str = ""
   x = 0.0
   y = 0.0
@@ -346,14 +334,6 @@ def MakePads_CONN_Dual(pins,meta):
 ############################################################################
 def MakePads_QUAD(pins,meta):
   """To Make the Pads and draw outline for Quad Package"""
-
-  drawing_line_thickness = 0.3
-  #This determines the package size as offset from pin 1
-  outline_offset = 1.25
-  #How far to the left of the package outline the circle's center is
-  circle_center_offset = 1.25
-  circle_radius = 0.75
-
   pin_str = ""  
   pitch = float(meta["pitch"])  
   pin = {}  
@@ -682,11 +662,10 @@ def autouintadjust():
 ############################################################################
 def packed():
   """To Pack the GUI inputs to the XML form"""
-  #Convert to Mils as all processing is in mils
-  #Not anymore it isn't
-  #if units.get() == "mm":
-  #  units.set("mils")
-  #  autouintadjust()
+  #Convert to mm as all processing is in mm
+  if units.get() == "mils":
+   units.set("mm")
+   autouintadjust()
   #Run Validation Check
   Validate()  
   if er != "ok":    
