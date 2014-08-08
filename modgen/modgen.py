@@ -176,48 +176,53 @@ def MetaData(comp):
 ############################################################################
 def MakePads_SIP(pins,meta):
   """To Make the Pads and draw outline for SIP Connector"""
+
+  drawing_line_thickness = 0.3
+  #This determines the package size as offset from pin 1
+  outline_offset = 1.25
+
   pin_str = ""
   x = 0
   y = 0
   pin = {}
-  pitch = float(meta["pitch"]) * 10
+  pitch = float(meta["pitch"])
   locking = 0
   for p in pins:
     if(meta["locking"]!=None):
       if(locking==0):
         locking=1
-        pin["piny"]="%d"%(y+(int(meta["locking"])*10))
+        pin["piny"]="%+f"%(y+(float(meta["locking"])))
       else:
         locking=0
-        pin["piny"]="%d"%(y-(int(meta["locking"])*10))
+        pin["piny"]="%+f"%(y-(float(meta["locking"])))
     else:
-      pin["piny"]="%d"%(y)
-    pin["pinx"]="%d"%(x)
+      pin["piny"]="%+f"%(y)
+    pin["pinx"]="%+f"%(x)
     x = x + pitch
     pin["padtype"]=meta["padtype"]
     pin["layermask"]=meta["padlayermask"]
-    pin["drill"]="%d 0 0"%(int(float(meta["paddrill"])*10))
+    pin["drill"]="%+f 0 0"%(float(meta["paddrill"]))
     if(x==pitch and meta["firstpadsquare"]!= None):
-      pin["shape"]="\"%s\" %s %d %d 0 0 0"%(p[0],"R",\
-          float(meta["padx"])*10,float(meta["pady"])*10)
+      pin["shape"]="\"%s\" %s %+f %+f 0 0 0"%(p[0],"R",\
+          float(meta["padx"]),float(meta["pady"]))
     else:
-      pin["shape"]="\"%s\" %s %d %d 0 0 0"%(p[0],meta["padshape"],\
-          float(meta["padx"])*10,float(meta["pady"])*10)
+      pin["shape"]="\"%s\" %s %+f %+f 0 0 0"%(p[0],meta["padshape"],\
+          float(meta["padx"]),float(meta["pady"]))
     pin_str += template_pad%pin #Add the Pad
   # Make Drawing  
-  buf = (max(float(meta["padx"]),float(meta["pady"]))+50)*10
+  buf = (max(float(meta["padx"]),float(meta["pady"]))+outline_offset)
   X = x - pitch + buf
   mx = buf/-2
   if(meta["locking"]!=None):#Add some margin for Locking
-    buf = buf + (int(meta["locking"])*20.0)
+    buf = buf + (float(meta["locking"])*2)
   Y = buf #Increase Y Only  
-  my = buf/-2  
-  drawing  = "DS %d %d %d %d 120 21"%(mx,my,mx+X,my)
-  drawing += "\nDS %d %d %d %d 120 21"%(mx,my,mx,my+Y)
-  drawing += "\nDS %d %d %d %d 120 21"%(mx,my+Y,mx+X,my+Y)
-  drawing += "\nDS %d %d %d %d 120 21"%(mx+X,my,mx+X,my+Y)
+  my = buf/-2
+  drawing  =   "DS %+f %+f %+f %+f %+f 21"%(mx,my,mx+X,my,drawing_line_thickness)
+  drawing += "\nDS %+f %+f %+f %+f %+f 21"%(mx,my,mx,Y+my,drawing_line_thickness)
+  drawing += "\nDS %+f %+f %+f %+f %+f 21"%(mx,Y+my,mx+X,Y+my,drawing_line_thickness)
+  drawing += "\nDS %+f %+f %+f %+f %+f 21"%(mx+X,my,mx+X,Y+my,drawing_line_thickness)
   meta["drawing"]=drawing
-  meta["modref_y"]="-1000"
+  meta["modref_y"]="-2.5"
   return pin_str
 ############################################################################
 def MakePads_DIP(pins,meta):
@@ -682,7 +687,7 @@ def packed():
   print("First Pad Square: " + ("True" if firstpinsquare.get() else "False"))
   meta["firstpadsquare"] = 1 if firstpinsquare.get() else None
   print("Self Locking Pattern: " + ("True" if locking.get() else "False"))
-  meta["locking"] = "5" if locking.get() else None
+  meta["locking"] = "0.125" if locking.get() else None
   print("Pad Type: " + padtype.get())
   meta["padtype"] = padtype.get()
   if padtype.get() == 'STD':
