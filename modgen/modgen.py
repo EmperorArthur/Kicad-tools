@@ -275,6 +275,14 @@ def MakePads_DIP(pins,meta):
 ############################################################################
 def MakePads_CONN_Dual(pins,meta):
   """ To Make the Pads and draw outline for Dual row Connector """
+
+  drawing_line_thickness = 0.3
+  #This determines the package size as offset from pin 1
+  outline_offset = 1.25
+  #How far to the left of the package outline the circle's center is
+  circle_center_offset = 1.25
+  circle_radius = 0.75
+
   pin_str = ""
   x = 0.0
   y = 0.0
@@ -299,18 +307,15 @@ def MakePads_CONN_Dual(pins,meta):
           float(meta["padx"]),float(meta["pady"]))
     pin_str += template_pad%pin #Add the Pad
   # Make Drawing  
-  bufx = (float(meta["padx"])+2.5+float(meta["rowx"]))
-  bufy = ((float(meta["pitch"])*(len(pins)-2)/2.0)\
-          +2.5+float(meta["pady"]))
-  X = bufx
-  mx = ((float(meta["padx"])/-2.0)-1.25)
-  Y = bufy
-  my = ((float(meta["pady"])/-2.0)-1.25)
-  drawing  = "DS %+f %+f %+f %+f 0.3 21"%(mx,my,mx+X,my)
-  drawing += "\nDS %+f %+f %+f %+f 0.3 21"%(mx,my,mx,Y+my)
-  drawing += "\nDS %+f %+f %+f %+f 0.3 21"%(mx,Y+my,mx+X,Y+my)
-  drawing += "\nDS %+f %+f %+f %+f 0.3 21"%(mx+X,my,mx+X,Y+my)
-  drawing += "\nDC %+f %+f %+f %+f 0.3 21"%(mx-1.25,0,mx-0.5,0)
+  X  = (float(meta["padx"])+(2*outline_offset)+float(meta["rowx"]))
+  Y  = ((float(meta["pitch"])*(len(pins)-2)/2.0)+(2*outline_offset)+float(meta["pady"]))
+  mx = ((float(meta["padx"])/-2.0)-outline_offset)
+  my = ((float(meta["pady"])/-2.0)-outline_offset)
+  drawing  =   "DS %+f %+f %+f %+f %+f 21"%(mx,my,mx+X,my,drawing_line_thickness)
+  drawing += "\nDS %+f %+f %+f %+f %+f 21"%(mx,my,mx,Y+my,drawing_line_thickness)
+  drawing += "\nDS %+f %+f %+f %+f %+f 21"%(mx,Y+my,mx+X,Y+my,drawing_line_thickness)
+  drawing += "\nDS %+f %+f %+f %+f %+f 21"%(mx+X,my,mx+X,Y+my,drawing_line_thickness)
+  drawing += "\nDC %+f %+f %+f %+f %+f 21"%(mx-circle_center_offset,0,mx-circle_center_offset-circle_radius,0,drawing_line_thickness)
   meta["drawing"]=drawing
   meta["modref_y"]="-3.8"
   return pin_str
