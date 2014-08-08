@@ -210,12 +210,23 @@ def MakeFirstPad(pins,meta):
         float(meta["padx"]),float(meta["pady"]))
   return template_pad%pin #Add the Pad
 ############################################################################
+def MakePad(pin_name,meta,x,y):
+  "Make a pad"
+  pin = {}
+  pin["piny"]="%+f"%(y)
+  pin["pinx"]="%+f"%(x)
+  pin["padtype"]=meta["padtype"]
+  pin["layermask"]=meta["padlayermask"]
+  pin["drill"]="%+f 0 0"%(float(meta["paddrill"]))
+  pin["shape"]="\"%s\" %s %+f %+f 0 0 0"%(pin_name,meta["padshape"],\
+      float(meta["padx"]),float(meta["pady"]))
+  return template_pad%pin #Add the Pad
+############################################################################
 def MakePads_SIP(pins,meta):
   """To Make the Pads and draw outline for SIP Connector"""
   pin_str = ""
-  x = 0
-  y = 0
-  pin = {}
+  x = 0.0
+  y = 0.0
   pitch = float(meta["pitch"])
   locking = 1
   #Handle first pin (special case)
@@ -225,20 +236,12 @@ def MakePads_SIP(pins,meta):
     if(meta["locking"]!=None):
       if(locking==0):
         locking=1
-        pin["piny"]="%+f"%(y+(float(meta["locking"])))
+        y = float(meta["locking"])
       else:
         locking=0
-        pin["piny"]="%+f"%(y-(float(meta["locking"])))
-    else:
-      pin["piny"]="%+f"%(y)
-    pin["pinx"]="%+f"%(x)
+        y = -float(meta["locking"])
+    pin_str += MakePad(pins[i],meta,x,y)
     x = x + pitch
-    pin["padtype"]=meta["padtype"]
-    pin["layermask"]=meta["padlayermask"]
-    pin["drill"]="%+f 0 0"%(float(meta["paddrill"]))
-    pin["shape"]="\"%s\" %s %+f %+f 0 0 0"%(pins[i],meta["padshape"],\
-        float(meta["padx"]),float(meta["pady"]))
-    pin_str += template_pad%pin #Add the Pad
   # Make Drawing  
   buf = (max(float(meta["padx"]),float(meta["pady"]))+outline_offset)
   X = x - pitch + buf
@@ -254,38 +257,23 @@ def MakePads_SIP(pins,meta):
 def MakePads_DIP(pins,meta):
   """To Make the Pads and draw outline for DIP Package"""
   pin_str = ""
-  x = 0
-  y = 0
-  pin = {}
+  x = 0.0
+  y = 0.0
   pitch = float(meta["pitch"])
   #Handle first pin (special case)
   pin_str = MakeFirstPad(pins,meta)
   y = pitch
   #Set First Half of the Pins
   for i in range(1,int(len(pins)/2)):
-    pin["piny"]="%+f"%(y)
-    pin["pinx"]="%+f"%(x)
+    pin_str += MakePad(pins[i],meta,x,y)
     y = y + pitch
-    pin["padtype"]=meta["padtype"]
-    pin["layermask"]=meta["padlayermask"]
-    pin["drill"]="%+f 0 0"%(float(meta["paddrill"]))
-    pin["shape"]="\"%s\" %s %+f %+f 0 0 0"%(pins[i],meta["padshape"],\
-        float(meta["padx"]),float(meta["pady"]))
-    pin_str += template_pad%pin #Add the Pad
   #Increment the Next Row
   x = float(meta["rowx"])
   y = y - pitch
   #Set Second Half of the Pins
   for i in range(int(len(pins)/2),len(pins)):
-    pin["piny"]="%+f"%(y)
-    pin["pinx"]="%+f"%(x)
+    pin_str += MakePad(pins[i],meta,x,y)
     y = y - pitch
-    pin["padtype"]=meta["padtype"]
-    pin["layermask"]=meta["padlayermask"]
-    pin["drill"]="%+f 0 0"%(float(meta["paddrill"]))
-    pin["shape"]="\"%s\" %s %+f %+f 0 0 0"%(pins[i],meta["padshape"],\
-          float(meta["padx"]),float(meta["pady"]))
-    pin_str += template_pad%pin #Add the Pad
   # Make Drawing  
   X  = (float(meta["padx"])+(2*outline_offset)+float(meta["rowx"]))
   Y  = ((float(meta["pitch"])*(len(pins)-2)/2.0)+(2*outline_offset)+float(meta["pady"]))
@@ -302,25 +290,17 @@ def MakePads_CONN_Dual(pins,meta):
   pin_str = ""
   x = 0.0
   y = 0.0
-  pin = {}
   pitch = float(meta["pitch"])
   #Handle first pin (special case)
   pin_str = MakeFirstPad(pins,meta)
   x = float(meta["rowx"])
   for i in range(1,len(pins)):
-    pin["piny"]="%+f"%(y)
-    pin["pinx"]="%+f"%(x)
+    pin_str += MakePad(pins[i],meta,x,y)
     if (i&1)==0:#Next Even Pin
       x = float(meta["rowx"])
     else:#Next Odd Pin
       x = 0
       y = y + pitch
-    pin["padtype"]=meta["padtype"]
-    pin["layermask"]=meta["padlayermask"]
-    pin["drill"]="%+f 0 0"%(float(meta["paddrill"]))
-    pin["shape"]="\"%s\" %s %+f %+f 0 0 0"%(pins[i],meta["padshape"],\
-        float(meta["padx"]),float(meta["pady"]))
-    pin_str += template_pad%pin #Add the Pad
   # Make Drawing  
   X  = (float(meta["padx"])+(2*outline_offset)+float(meta["rowx"]))
   Y  = ((float(meta["pitch"])*(len(pins)-2)/2.0)+(2*outline_offset)+float(meta["pady"]))
