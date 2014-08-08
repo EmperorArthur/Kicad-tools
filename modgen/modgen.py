@@ -83,6 +83,7 @@ _debug_message = 1
 ############################################################################
 template_pcb = """PCBNEW-LibModule-V1  07-02-2012 08:54:12
 # encoding utf-8
+Units mm
 $INDEX
 %(modname)s
 $EndINDEX
@@ -97,8 +98,8 @@ Kw %(keywords)s
 Sc 00000000
 AR %(modname)s
 Op 0 0 0
-T0 0 %(modref_y)s 600 600 0 120 N V 21 "%(refname)s"
-T1 0 -500 50 50 0 10 N I 21 "VAL**"
+T0 0 %(modref_y)s 1.5 1.5 0 0.3 N V 21 "%(refname)s"
+T1 0 -1.25 0.125 0.125 0 0.025 N I 21 "VAL**"
 %(drawing)s
 %(pads)s
 $EndMODULE  %(modname)s
@@ -116,12 +117,13 @@ Po %(pinx)s %(piny)s
 $EndPAD"""
 template_lib = """EESchema-LIBRARY Version 2.3  Date: 6/1/2012-05:30AM IST
 #encoding utf-8
+Units mm
 #
 # %(compname)s
 #
-DEF %(compname)s %(refname)s 0 40 Y Y 1 F N
-F0 "%(refname)s" 0 %(refname_y)s 50 H V C C N N
-F1 "%(compname)s" 0 %(compname_y)s 50 H V C C N N
+DEF %(compname)s %(refname)s 0 0.1 Y Y 0.0025 F N
+F0 "%(refname)s" 0 %(refname_y)s 0.125 H V C C N N
+F1 "%(compname)s" 0 %(compname_y)s 0.125 H V C C N N
 DRAW
 %(box)s
 %(pins)s
@@ -274,43 +276,43 @@ def MakePads_DIP(pins,meta):
 def MakePads_CONN_Dual(pins,meta):
   """ To Make the Pads and draw outline for Dual row Connector """
   pin_str = ""
-  x = 0
-  y = 0
+  x = 0.0
+  y = 0.0
   pin = {}
-  pitch = float(meta["pitch"]) * 10
+  pitch = float(meta["pitch"])
   for i in range(0,len(pins)):
-    pin["piny"]="%d"%(y)
-    pin["pinx"]="%d"%(x)
+    pin["piny"]="%+f"%(y)
+    pin["pinx"]="%+f"%(x)
     if (i&1)==0:#Next Even Pin
-      x = float(meta["rowx"])*10      
+      x = float(meta["rowx"])
     else:#Next Odd Pin
       x = 0
       y = y + pitch
     pin["padtype"]=meta["padtype"]
     pin["layermask"]=meta["padlayermask"]
-    pin["drill"]="%d 0 0"%(int(float(meta["paddrill"])*10))
+    pin["drill"]="%+f 0 0"%(float(meta["paddrill"]))
     if(i == 0 and meta["firstpadsquare"]!= None):
-      pin["shape"]="\"%s\" %s %d %d 0 0 0"%(pins[i],"R",\
-          float(meta["padx"])*10,float(meta["pady"])*10)
+      pin["shape"]="\"%s\" %s %+f %+f 0 0 0"%(pins[i],"R",\
+          float(meta["padx"]),float(meta["pady"]))
     else:
-      pin["shape"]="\"%s\" %s %d %d 0 0 0"%(pins[i],meta["padshape"],\
-          float(meta["padx"])*10,float(meta["pady"])*10)
+      pin["shape"]="\"%s\" %s %+f %+f 0 0 0"%(pins[i],meta["padshape"],\
+          float(meta["padx"]),float(meta["pady"]))
     pin_str += template_pad%pin #Add the Pad
   # Make Drawing  
-  bufx = (float(meta["padx"])+100+float(meta["rowx"]))*10
+  bufx = (float(meta["padx"])+2.5+float(meta["rowx"]))
   bufy = ((float(meta["pitch"])*(len(pins)-2)/2.0)\
-          +100+float(meta["pady"]))*10
+          +2.5+float(meta["pady"]))
   X = bufx
-  mx = ((float(meta["padx"])/-2.0)-50)*10
+  mx = ((float(meta["padx"])/-2.0)-1.25)
   Y = bufy
-  my = ((float(meta["pady"])/-2.0)-50)*10
-  drawing  = "DS %d %d %d %d 120 21"%(mx,my,mx+X,my)
-  drawing += "\nDS %d %d %d %d 120 21"%(mx,my,mx,Y+my)
-  drawing += "\nDS %d %d %d %d 120 21"%(mx,Y+my,mx+X,Y+my)
-  drawing += "\nDS %d %d %d %d 120 21"%(mx+X,my,mx+X,Y+my)
-  drawing += "\nDC %d %d %d %d 120 21"%(mx-500,0,mx-200,0)
+  my = ((float(meta["pady"])/-2.0)-1.25)
+  drawing  = "DS %+f %+f %+f %+f 0.3 21"%(mx,my,mx+X,my)
+  drawing += "\nDS %+f %+f %+f %+f 0.3 21"%(mx,my,mx,Y+my)
+  drawing += "\nDS %+f %+f %+f %+f 0.3 21"%(mx,Y+my,mx+X,Y+my)
+  drawing += "\nDS %+f %+f %+f %+f 0.3 21"%(mx+X,my,mx+X,Y+my)
+  drawing += "\nDC %+f %+f %+f %+f 0.3 21"%(mx-1.25,0,mx-0.5,0)
   meta["drawing"]=drawing
-  meta["modref_y"]="-1500"
+  meta["modref_y"]="-3.8"
   return pin_str
 ############################################################################
 def MakePads_QUAD(pins,meta):
@@ -647,9 +649,10 @@ def autouintadjust():
 def packed():
   """To Pack the GUI inputs to the XML form"""
   #Convert to Mils as all processing is in mils
-  if units.get() == "mm":
-    units.set("mils")
-    autouintadjust()
+  #Not anymore it isn't
+  #if units.get() == "mm":
+  #  units.set("mils")
+  #  autouintadjust()
   #Run Validation Check
   Validate()  
   if er != "ok":    
