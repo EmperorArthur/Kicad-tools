@@ -222,11 +222,22 @@ def MakePad(pin_name,meta,x,y):
       float(meta["padx"]),float(meta["pady"]))
   return template_pad%pin #Add the Pad
 ############################################################################
+def MakeDrawing(meta):
+  "Make the part outline"
+  X = float(meta["rowx"]) + float(meta["padx"])/2 + outline_offset
+  Y = float(meta["rowy"]) + float(meta["pady"])/2 + outline_offset
+  mx = ((float(meta["padx"])/-2.0)-outline_offset)
+  my = ((float(meta["pady"])/-2.0)-outline_offset)
+  drawing = Generate_Rectangle(mx,my,X,Y,drawing_line_thickness)
+  drawing += "\nDC %+f %+f %+f %+f %+f 21"%(mx-circle_center_offset,0,mx-circle_center_offset-circle_radius,0,drawing_line_thickness)
+  meta["drawing"]= drawing
+############################################################################
 def MakePads_SIP(pins,meta):
   """To Make the Pads and draw outline for SIP Connector"""
   pin_str = ""
   x = 0.0
   y = 0.0
+  buf = 0
   pitch = float(meta["pitch"])
   locking = 1
   #Handle first pin (special case)
@@ -243,14 +254,10 @@ def MakePads_SIP(pins,meta):
     pin_str += MakePad(pins[i],meta,x,y)
     x = x + pitch
   # Make Drawing  
-  buf = (max(float(meta["padx"]),float(meta["pady"]))+outline_offset)
-  X = x - pitch + buf
-  mx = buf/-2
-  if(meta["locking"]!=None):#Add some margin for Locking
-    buf = buf + (float(meta["locking"])*2)
-  Y = buf #Increase Y Only  
-  my = buf/-2
-  meta["drawing"]=Generate_Rectangle(mx,my,mx+X,my+Y,drawing_line_thickness)
+  num_cols = int(meta["PIN_N"])
+  meta["rowx"] = pitch * (num_cols - 1)
+  meta["rowy"] = 0
+  MakeDrawing(meta)
   meta["modref_y"]="-2.5"
   return pin_str
 ############################################################################
@@ -275,13 +282,9 @@ def MakePads_DIP(pins,meta):
     pin_str += MakePad(pins[i],meta,x,y)
     y = y - pitch
   # Make Drawing  
-  X  = (float(meta["padx"])+(2*outline_offset)+float(meta["rowx"]))
-  Y  = ((float(meta["pitch"])*(len(pins)-2)/2.0)+(2*outline_offset)+float(meta["pady"]))
-  mx = ((float(meta["padx"])/-2.0)-outline_offset)
-  my = ((float(meta["pady"])/-2.0)-outline_offset)
-  drawing = Generate_Rectangle(mx,my,mx+X,my+Y,drawing_line_thickness)
-  drawing += "\nDC %+f %+f %+f %+f %+f 21"%(mx-circle_center_offset,0,mx-circle_center_offset-circle_radius,0,drawing_line_thickness)
-  meta["drawing"]=drawing
+  num_rows = int(int(meta["PIN_N"])/2)
+  meta["rowy"] = pitch * (num_rows - 1)
+  MakeDrawing(meta)
   meta["modref_y"]="-3.8"
   return pin_str
 ############################################################################
@@ -302,13 +305,9 @@ def MakePads_CONN_Dual(pins,meta):
       x = 0
       y = y + pitch
   # Make Drawing  
-  X  = (float(meta["padx"])+(2*outline_offset)+float(meta["rowx"]))
-  Y  = ((float(meta["pitch"])*(len(pins)-2)/2.0)+(2*outline_offset)+float(meta["pady"]))
-  mx = ((float(meta["padx"])/-2.0)-outline_offset)
-  my = ((float(meta["pady"])/-2.0)-outline_offset)
-  drawing = Generate_Rectangle(mx,my,mx+X,my+Y,drawing_line_thickness)
-  drawing += "\nDC %+f %+f %+f %+f %+f 21"%(mx-circle_center_offset,0,mx-circle_center_offset-circle_radius,0,drawing_line_thickness)
-  meta["drawing"]=drawing
+  num_rows = int(int(meta["PIN_N"])/2)
+  meta["rowy"] = pitch * (num_rows - 1)
+  MakeDrawing(meta)
   meta["modref_y"]="-3.8"
   return pin_str
 ############################################################################
